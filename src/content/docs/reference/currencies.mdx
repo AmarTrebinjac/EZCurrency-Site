@@ -1,0 +1,46 @@
+---
+title: Currencies
+description: How to use the EZ Currency to get supported currencies and their codes.
+sidebar:
+  order: 1
+---
+
+EZ Currency lets you easily retrieve the currencies supported by Norges Bank's [currency exchange API.](https://app.norges-bank.no/query/index.html#/no/currency)
+The API tracks about ~40 currencies at the time of writing. If you find that they support a currency not currently available in EZ Currency, you can feel free to either create a PR or raise an issue in the [EZ Currency repository on Github.](https://github.com/AmarTrebinjac/EZ-Currency-Api)
+
+### Retrieve currencies and their codes
+
+To retrieve the names of all the supported currencies along with their codes, you can make a request to the following endpoint:
+```
+https://api.ezcurrency.dev/currencies
+```
+
+The endpoint will return an array of all the currencies in the following format:
+```json
+[
+  { code: "AUD", name: "Australian Dollar" },
+  { code: "BDT", name: "Bangladeshi Taka" },
+  { code: "BGN", name: "Bulgarian Lev" },
+  { code: "BRL", name: "Brazilian Real" },
+  // Rest of the supported currencies
+];
+```
+
+### Retrieve currency codes only
+
+If you wish to return just the currency codes, you can do so by using this endpoint:
+```
+https://api.ezcurrency.dev/currencies/codes
+```
+
+Which will return the following result type:
+```json
+[
+  "AUD",
+  "BDT",
+  "BGN",
+  "BRL",
+  "BYN",
+  // Rest of the supported codes
+];
+```

@@ -1,0 +1,114 @@
+---
+title: Converting Currencies
+description: How to use the currency conversion endpoints available in EZ Currency.
+sidebar:
+    order: 2
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+The main motivation of EZ Currency is to provide a simple way to convert currencies using [Norges Bank's API.](https://app.norges-bank.no/query/index.html#/no/currency)
+Their API is reliable and provides great data, but it can be difficult to parse for a developer just trying to get some simple conversion numbers.
+The rates are updated around 16:00 CET every day.
+
+### Convert one to many
+
+If you wish to get the conversion rates of all supported currencies to a specific currency, you can do so using the following endpoint:
+```
+https://api.ezcurrency.dev/convert/all-from/{currency}/amount/{amount}
+```
+
+For example, if I want to know how much I get of each currency for 100 Norwegian Krones (NOK), I would make the following request:
+```
+https://api.ezcurrency.dev/convert/all-from/NOK/amount/100
+```
+
+Which would return the following response:
+```json
+[
+  {
+    "code": "NOK",
+    "amount": 100,
+    "conversions": [
+      { "code": "AUD", "rate": 13.83298059232822896349476422 },
+      { "code": "BDT", "rate": 1095.2902519167579408543263965 },
+      { "code": "BGN", "rate": 16.85005139265674760308018939 },
+      { "code": "BRL", "rate": 50.34486230680159089764889493 }
+      // Rest of the supported currencies
+    ]
+  }
+]
+```
+<Aside type="tip">
+Since Norges Bank updates their rates once a day around 16:00 CET, we recommend to cache the rates to lower your reliability on both EZ Currency and Norges Bank's API uptime.
+This way, if either API experiences downtime, you can use the cached rates of a given currency to convert to other currencies.
+</Aside>
+
+### Convert selected currencies
+You can also convert one currency to another using the following endpoint:
+
+```
+https://api.ezcurrency.dev/convert/from/{fromCurrency}/to/{toCurrency}/amount/{amount} 
+```
+For example, converting 1 EURO to USD:
+```
+https://api.ezcurrency.dev/convert/from/EUR/to/USD/amount/1
+```
+
+Which returns the following result:
+```json
+[
+  {
+    "code": "EUR",
+    "amount": 1,
+    "conversions": [
+      {
+        "code": "USD",
+        "rate": 1.0825001865254047601283294785
+      }
+    ]
+  }
+]
+```
+
+Note that the values returned are in an array. That is because
+you can also convert X amount of currencies to Y amount of currencies using comma separation as such:
+```
+https://api.ezcurrency.dev/convert/from/USD,CAD/to/EUR,GBP/amount/1
+```
+This will return the conversion rates of 1 USD to GBP and EUR, and 1 CAD to GBP and EUR:
+```json
+[
+  {
+    "code": "USD",
+    "amount": 1,
+    "conversions": [
+      {
+        "code": "EUR",
+        "rate": 0.9237873696907039
+      },
+      {
+        "code": "GBP",
+        "rate": 0.7807648617947747
+      }
+    ]
+  },
+  {
+    "code": "CAD",
+    "amount": 1,
+    "conversions": [
+      {
+        "code": "EUR",
+        "rate": 0.6775997243042992
+      },
+      {
+        "code": "GBP",
+        "rate": 0.5726924533247896
+      }
+    ]
+  }
+]
+```
+<Aside type="note">
+We keep the full decimal precision of the rates to ensure the most accurate conversion possible. Feel free to round the rates to your desired precision.
+</Aside>
