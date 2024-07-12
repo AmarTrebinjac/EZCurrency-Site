@@ -1,12 +1,18 @@
 ---
-title: EZ Currency
+title: Convert
 description: Convert currencies using Norges Bank's API.
 template: splash
-hero:
-  title: 'EZ Currency'
-  tagline: Currencies made simple. (Landing page is work in progress)
-  actions:
-  - text: Get started
-    link: /reference/currencies/
-    variant: primary
 ---
+
+import Converter from "../../components/Converter.astro";
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+
+<Converter />
+
+## Need more?
+We provide a wrapper API around Norges Bank's API that provides currency exchange rates for ~40 currencies with daily updates.
+EZ Currency is free to use, and requires no registration or API key.
+<CardGrid>
+<LinkCard title="Check out our docs to get started" href="/reference/currencies/" />
+</CardGrid>

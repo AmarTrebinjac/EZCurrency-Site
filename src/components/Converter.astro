@@ -1,0 +1,184 @@
+---
+type Currency = {
+  code: string;
+  name: string;
+};
+
+const currenciesRes = await fetch("https://api.ezcurrency.dev/currencies");
+const currencies: Currency[] = await currenciesRes.json();
+---
+
+<section>
+  <div class="input-group">
+    <input type="number" id="fromAmount" min="0" value="1" />
+    <select id="fromCurrencyCode">
+      <option value="USD" class="hidden">USD - United States Dollar</option>
+      {
+        currencies.map((currency) => (
+          <option value={currency.code}>
+            {currency.code} - {currency.name}
+          </option>
+        ))
+      }
+    </select>
+  </div>
+  <div class="input-group">
+    <input type="number" id="toAmount" min="0" />
+    <select id="toCurrencyCode">
+      <option value="EUR" class="hidden">EUR - Euro</option>
+      {
+        currencies.map((currency) => (
+          <option value={currency.code}>
+            {currency.code} - {currency.name}
+          </option>
+        ))
+      }
+    </select>
+  </div>
+</section>
+
+<script>
+  // @ts-nocheck
+
+  const fromCurrency = document.getElementById("fromCurrencyCode");
+  const toCurrency = document.getElementById("toCurrencyCode");
+  const fromAmountInput = document.getElementById("fromAmount");
+  const toAmountInput = document.getElementById("toAmount");
+
+  window.onload = async () => {
+    const convertedCurrency = await convertCurrency(
+      fromCurrency.value,
+      toCurrency.value,
+      1
+    );
+    toAmountInput.value = convertedCurrency.conversions[0].rate;
+  };
+
+  const debounce = (func, delay) => {
+    let timeoutId;
+
+    return function (...args) {
+      clearTimeout(timeoutId);
+
+      timeoutId = setTimeout(() => {
+        func.apply(this, args);
+      }, delay);
+    };
+  };
+
+  const handleInputChange = async (e) => {
+    const eventId = e.target.id;
+
+    const fromWasChanged = eventId === "fromAmount";
+
+    if (fromCurrency.value === toCurrency.value) {
+      if (fromWasChanged) {
+        toAmountInput.value = fromAmountInput.value;
+      } else {
+        fromAmountInput.value = toAmountInput.value;
+      }
+      return;
+    }
+
+    if (fromWasChanged) {
+      const convertedCurrency = await convertCurrency(
+        fromCurrency.value,
+        toCurrency.value,
+        fromAmountInput.value
+      );
+      toAmountInput.value = convertedCurrency.conversions[0].rate;
+    } else {
+      const convertedCurrency = await convertCurrency(
+        toCurrency.value,
+        fromCurrency.value,
+        toAmountInput.value
+      );
+      fromAmountInput.value = convertedCurrency.conversions[0].rate;
+    }
+  };
+
+  const handleCurrencyChange = async (e) => {
+    const eventId = e.target.id;
+
+    if (fromCurrency.value === toCurrency.value) {
+      if (eventId === "fromCurrencyCode")
+        toCurrencyInput.value = fromAmountInput.value;
+      else fromAmountInput.value = toAmountInput.value;
+      return;
+    }
+
+    if (eventId === "fromCurrencyCode") {
+      const convertedCurrency = await convertCurrency(
+        fromCurrency.value,
+        toCurrency.value,
+        fromAmountInput.value
+      );
+      toAmountInput.value = convertedCurrency.conversions[0].rate;
+    } else {
+      const convertedCurrency = await convertCurrency(
+        toCurrency.value,
+        fromCurrency.value,
+        toAmountInput.value
+      );
+      fromAmountInput.value = convertedCurrency.conversions[0].rate;
+    }
+  };
+
+  const convertCurrency = async (fromCode, toCode, amount) => {
+    const res = await fetch(
+      `https://api.ezcurrency.dev/convert/from/${fromCode}/to/${toCode}/amount/${amount}`
+    );
+    const convertedCurrency: ConvertedCurrency[] = await res.json();
+    return convertedCurrency[0];
+  };
+
+  fromAmountInput.addEventListener("input", debounce(handleInputChange, 300));
+  toAmountInput.addEventListener("input", debounce(handleInputChange, 300));
+  fromCurrency.addEventListener("change", handleCurrencyChange);
+  toCurrency.addEventListener("change", handleCurrencyChange);
+</script>
+
+<style>
+  .input-group {
+    display: flex;
+  }
+
+  @media (max-width: 768px) {
+    .input-group {
+      width: 100%
+      flex-direction: column;
+    }
+    select {
+      width: 100%;
+    }
+    input {
+      width: 100%;
+    }
+  }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  select {
+    padding: 0.5rem;
+    font-size: 1rem;
+  }
+
+  span {
+    font-size: 1rem;
+  }
+
+  input {
+    padding: 0.5rem;
+    font-size: 1rem;
+    width: fit-content;
+  }
+
+  .hidden {
+    display: none;
+  }
+</style>
